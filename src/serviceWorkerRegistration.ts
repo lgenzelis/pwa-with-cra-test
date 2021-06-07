@@ -18,24 +18,38 @@ const isLocalhost = Boolean(
     window.location.hostname.match(/^127(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/)
 );
 
+console.log({ isLocalhost });
+
 type Config = {
   onSuccess?: (registration: ServiceWorkerRegistration) => void;
   onUpdate?: (registration: ServiceWorkerRegistration) => void;
 };
 
+console.log('typeof process', typeof process)
+
 export function register(config?: Config) {
+  console.log('[register] typeof process', typeof process)
+  console.log('[register]', process.env.NODE_ENV === 'production', 'serviceWorker' in navigator)
   if (process.env.NODE_ENV === 'production' && 'serviceWorker' in navigator) {
     // The URL constructor is available in all browsers that support SW.
+    console.log('The URL constructor is available in all browsers that support SW.')
     const publicUrl = new URL(process.env.PUBLIC_URL, window.location.href);
+    console.log({publicUrl})
     if (publicUrl.origin !== window.location.origin) {
+      console.log(`[register] Our service worker won't work if PUBLIC_URL is on a different origin
+ from what our page is served on. This might happen if a CDN is used to
+ serve assets; see https://github.com/facebook/create-react-app/issues/2374`)
+
       // Our service worker won't work if PUBLIC_URL is on a different origin
       // from what our page is served on. This might happen if a CDN is used to
       // serve assets; see https://github.com/facebook/create-react-app/issues/2374
       return;
     }
 
+
     window.addEventListener('load', () => {
       const swUrl = `${process.env.PUBLIC_URL}/service-worker.js`;
+      console.log('[register][load]', {swUrl, isLocalhost})
 
       if (isLocalhost) {
         // This is running on localhost. Let's check if a service worker still exists or not.
@@ -45,11 +59,13 @@ export function register(config?: Config) {
         // service worker/PWA documentation.
         navigator.serviceWorker.ready.then(() => {
           console.log(
-            'This web app is being served cache-first by a service ' +
+            '[register][load] This web app is being served cache-first by a service ' +
               'worker. To learn more, visit https://cra.link/PWA'
           );
         });
       } else {
+
+        console.log('[register][load] registering sw')
         // Is not localhost. Just register service worker
         registerValidSW(swUrl, config);
       }
@@ -67,6 +83,7 @@ function registerValidSW(swUrl: string, config?: Config) {
           return;
         }
         installingWorker.onstatechange = () => {
+          console.log('[registerValidSW][onstatechange]')
           if (installingWorker.state === 'installed') {
             if (navigator.serviceWorker.controller) {
               // At this point, the updated precached content has been fetched,
@@ -102,17 +119,20 @@ function registerValidSW(swUrl: string, config?: Config) {
 }
 
 function checkValidServiceWorker(swUrl: string, config?: Config) {
+  console.log('[checkValidServiceWorker]', {swUrl, config})
   // Check if the service worker can be found. If it can't reload the page.
   fetch(swUrl, {
     headers: { 'Service-Worker': 'script' },
   })
     .then((response) => {
+      console.log('[checkValidServiceWorker]', {response})
       // Ensure service worker exists, and that we really are getting a JS file.
       const contentType = response.headers.get('content-type');
       if (
         response.status === 404 ||
         (contentType != null && contentType.indexOf('javascript') === -1)
       ) {
+        console.log('No service worker found. Probably a different app. Reload the page.')
         // No service worker found. Probably a different app. Reload the page.
         navigator.serviceWorker.ready.then((registration) => {
           registration.unregister().then(() => {
@@ -120,6 +140,9 @@ function checkValidServiceWorker(swUrl: string, config?: Config) {
           });
         });
       } else {
+        console.log(
+          'Service worker found. Proceed as normal.'
+        )
         // Service worker found. Proceed as normal.
         registerValidSW(swUrl, config);
       }
@@ -140,3 +163,5 @@ export function unregister() {
       });
   }
 }
+
+console.log('end of serviceWorkerRegistrarion.ts file')
